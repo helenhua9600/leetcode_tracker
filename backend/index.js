@@ -1,27 +1,16 @@
 const express = require('express')
-const mysql = require('mysql')
 const cors = require('cors')
+const dotenv = require('dotenv').config();
 
+const PORT = process.env.PORT || 5000;
 const app = express()
+const problemsRoutes = require("./routes/problemsRoutes")
 
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password:"",
-  database: ""
-})
+app.use(cors()); // Enable Cross-Origin Resource Sharing for frontend
+app.use(express.json());  // Parse incoming JSON requests
 
-app.get("/users", (req, res) => {
-  const sql = "SELECT * FROM users"
-  db.query(sql, (err, data) => {
-    if (err) return res.json(err)
-    else return res.json(data)
-  })
-})
+// Use routes
+app.use('/api/problems', problemsRoutes);
 
-app.get("/api", (req, res) => {
-  res.json({"users": ["userOne", "userTwo", "userThree", "userFour"] })
-})
-
-// port listening on 5000
-app.listen(5000, () => {console.log("Server started on port 5000") })
+// port listening on 5000 by default
+app.listen(PORT, () => {console.log(`Server is running on port ${PORT}`) })
