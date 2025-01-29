@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 function App() {
   const [showForm, setShowForm] = useState(false);
   const [link, setLink] = useState("");
-  const [difficulty, setDifficulty] = useState("");
+  const [difficulty, setDifficulty] = useState("Easy");
   const [usedAnswer, setUsedAnswer] = useState(0);
   const [comments, setComments] = useState("");
   const handleSubmit = (e) => {
@@ -127,7 +127,11 @@ function App() {
 
           <label>
             Difficulty: 
-            <input type="text" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} required />
+            <select name='difficulty' id='diffId' value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
           </label>
           <br />
 
@@ -139,7 +143,7 @@ function App() {
 
           <label>
             Comments: 
-            <textarea value={comments} onChange={(e) => setComments(e.target.value)} required />
+            <textarea value={comments} onChange={(e) => setComments(e.target.value)} />
           </label>
           <br />
 
