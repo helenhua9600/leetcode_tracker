@@ -17,7 +17,7 @@ const addProblem = (req, res) => {
         if (err) {
             return res.status(500).json({ error: 'Error inserting problem', details: err.stack });
         }
-        res.status(201).json({ message: 'Problem inserted', problemId: results.insertId });
+        res.status(201).json(results);
     });
 };
 
@@ -45,14 +45,13 @@ const getAllProblems = (req, res) => {
 
 // Function to delete a problem
 const deleteProblem = (req, res) => {
-    const { problemId } = req.params;
+    const problemId = req.params.problemId;
     const query = 'DELETE FROM Problems WHERE problem_id = ?';
-    
     db.query(query, [problemId], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: 'Error deleting problem', details: err.stack });
+            return res.status(500).json({ error: 'Error deleting problem with problemId: ' + JSON.stringify(problemId), details: err.stack });
         }
-        res.status(200).json({ message: 'Problem deleted successfully' });
+        res.status(200).json({ message: 'Problem deleted successfully with query: ' + query + ' and problemId: ' + problemId});
     });
 };
 
