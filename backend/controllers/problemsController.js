@@ -10,10 +10,10 @@ const db = mysql.createPool({
   }) 
 
 const addProblem = (req, res) => {
-    const { title, link, difficulty, description, usedAnswer } = req.body;
-    const query = 'INSERT INTO Problems (title, link, difficulty, description, usedAnswer) VALUES (?, ?, ?, ?, ?)';
+    const { link, difficulty, usedAnswer, comments, title } = req.body;
+    const query = 'INSERT INTO Problems (link, difficulty, usedAnswer, comments, title) VALUES (?, ?, ?, ?, ?)';
     
-    db.query(query, [title, link, difficulty, description, usedAnswer], (err, results) => {
+    db.query(query, [link, difficulty, usedAnswer, comments, title], (err, results) => {
         if (err) {
             return res.status(500).json({ error: 'Error inserting problem', details: err.stack });
         }

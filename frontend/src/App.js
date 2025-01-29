@@ -1,14 +1,27 @@
 import React, { useEffect, useState } from 'react'
 
 function App() {
-  
+  const [showForm, setShowForm] = useState(false);
+  const [link, setLink] = useState("");
+  const [difficulty, setDifficulty] = useState("");
+  const [usedAnswer, setUsedAnswer] = useState(0);
+  const [comments, setComments] = useState("");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleAddProblem(link, difficulty, usedAnswer, comments);
+    setShowForm(false); // Hide form after submission
+    setLink("");
+    setDifficulty("");
+    setUsedAnswer(0);
+    setComments("");
+  };
   const [problems, setProblems] = useState([])
   const [newProblem, setNewProblem] = useState({
       title: '',
       link: '',
       difficulty: '',
-      description: '',
       usedAnswer: 0,
+      comments: '',
   });
     // Fetch problems from the backend
     useEffect(() => {
@@ -22,9 +35,34 @@ function App() {
         ).catch((error) => console.error('Error fetching problems:', error));
     }, []);
 
+    // Get title of leetcode problem when provided a link
+    const getTitleFromLink = (link) => {
+      try {
+          const parts = link.split('/'); // Split URL by "/"
+          const index = parts.indexOf('problems'); // Find "problems" in the URL
+  
+          if (index !== -1 && index + 1 < parts.length) {
+              return parts[index + 1]; // Return the next part after "problems"
+          } else {
+              throw new Error('Invalid link format');
+          }
+      } catch (error) {
+          console.error('Error extracting title from link:', error.message);
+          return null;
+      }
+  };
+
     // Add new problem
-    const handleAddProblem = () => {
-        fetch('http://localhost:5000/api/problems', {
+    const handleAddProblem = (link, difficulty, usedAnswer, comments) => {
+      let title = getTitleFromLink(link);
+      const newProblem = {
+        link,
+        difficulty,
+        usedAnswer: Number(usedAnswer), // Ensure it's a number (0 or 1)
+        comments,
+        title,
+    };  
+      fetch('http://localhost:5000/api/problems', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -34,7 +72,21 @@ function App() {
           (response) => response.json()
         ).then((data) => {
           console.log(data);
-          setProblems([...problems, newProblem]);  // Add the new problem to the state
+          setProblems([...problems, data]);  // Add the new problem to the state
+        }).catch((error) => console.error('Error adding problem:', error));
+    };
+
+    const handleDeleteProblem = (problemId) => {
+      fetch('http://localhost:5000/api/problems/${problemId}', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }).then(
+          (response) => response.json()
+        ).then((data) => {
+          console.log(data);
+          setProblems((filterProblems) => filterProblems.filter( (problem) => problem.problem_id !== problemId));  // Remove the problem from state
         }).catch((error) => console.error('Error adding problem:', error));
     };
 
@@ -62,12 +114,51 @@ function App() {
         {problems.map((problem) => (
             <li key={problem.problem_id}>
               {problem.title} - {problem.difficulty}
-              <button onClick={() => handleUpdateAnswerStatus(problem.problem_id, 1)}>Mark as solved</button>
+              {/* {<button onClick={() => handleDeleteProblem(problem.problem_id)}>Delete</button>} */}
+              {/* <button onClick={() => handleUpdateAnswerStatus(problem.problem_id, 1)}>Mark as solved</button> */}
             </li>
           ))}
       </ul>
 
-      <button onClick={handleAddProblem}>Add Problem</button>
+      {!showForm ? (
+        <button onClick={() => setShowForm(true)}>Add Problem</button>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <label>
+            Link:
+            <input type="text" value={link} onChange={(e) => setLink(e.target.value)} required />
+          </label>
+          <br />
+
+          <label>
+            Difficulty:
+            <input type="text" value={difficulty} onChange={(e) => setDifficulty(e.target.value)} required />
+          </label>
+          <br />
+
+          <label>
+            Used Answer (1 or 0):
+            <input
+              type="number"
+              min="0"
+              max="1"
+              value={usedAnswer}
+              onChange={(e) => setUsedAnswer(Number(e.target.value))}
+              required
+            />
+          </label>
+          <br />
+
+          <label>
+            Comments:
+            <textarea value={comments} onChange={(e) => setComments(e.target.value)} required />
+          </label>
+          <br />
+
+          <button type="submit">Submit</button>
+          <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+        </form>
+      )}
     </div>
     
   )
